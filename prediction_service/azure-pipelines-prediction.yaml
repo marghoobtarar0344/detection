@@ -1,0 +1,44 @@
+# Docker
+# Build a Docker image
+# https://docs.microsoft.com/azure/devops/pipelines/languages/docker
+
+trigger:
+- prediction
+
+resources:
+- repo: self
+
+variables:
+  tag: '$(Build.BuildId)'
+
+stages:
+- stage: Build
+  displayName: Build image
+  jobs:
+  - job: Build
+    displayName: Build
+    pool:
+      name: 'Video Analytics Agents'
+      demands:
+      - Agent.OS -equals Linux
+      - docker
+      - Agent.Name -equals gpudev-srv
+    steps:
+    - checkout: self
+      clean: true
+    - task: Bash@3
+      displayName: Clear Untagged/Dangling Docker Images
+      continueOnError: True
+      inputs:
+        targetType: inline
+        script: docker image prune --filter "dangling=true" -f
+
+    
+    - task: Docker@2
+      inputs:
+        command: 'build'
+        Dockerfile: 'src/prediction_service/prediction/Dockerfile'
+        buildContext: 'src/prediction_service/prediction/'
+        tags: 'predictiongpu:latest'
+        addPipelineData: false
+        addBaseImageData: false

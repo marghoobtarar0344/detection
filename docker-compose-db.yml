@@ -1,0 +1,64 @@
+version: "3.2"
+services:
+  database:
+    image: mcr.microsoft.com/mssql/server:2019-latest
+    hostname: ${DB_HOST}
+    env_file: 
+      - .env
+    ports: 
+      - ${DB_EXT_PORT}:1433
+    profiles: ["db"] # Allows selectively to enable or disable this services depending on your needs and will not start by default.
+    healthcheck:
+        test: /opt/mssql-tools/bin/sqlcmd -S localhost -U sa -P "$${MSSQL_SA_PASSWORD}" -Q "SELECT 1" -b -o /dev/null
+        interval: 10s
+        timeout: 3s
+        retries: 10
+        start_period: 10s
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT}/database/mssql:/var/opt/mssql # MS SQL Database files
+    restart: on-failure
+
+  minio:
+    image: minio/minio
+    hostname: ${MINIO_HOST}
+    env_file: 
+      - .env
+    ports: 
+      - ${MINIO_EXT_PORT}:9000
+      - ${MINIO_CON_EXT_PORT}:9001
+    profiles: ["db"] # Allows selectively to enable or disable this services depending on your needs and will not start by default.
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:9000/minio/health/live"]
+      interval: 30s
+      timeout: 20s
+      retries: 3
+    volumes:
+      - ${ROOT}/database/minio:/data # Minio Database files
+    restart: on-failure
+    command: server --console-address ":9001" /data
+
+  zookeeper:
+    container_name: th-zookeeper
+    environment:
+      ALLOW_ANONYMOUS_LOGIN: "yes"
+    image: bitnami/zookeeper:latest
+    ports:
+      - 2181:2181
+    profiles: ["db"] # Allows selectively to enable or disable this services depending on your needs and will not start by default.
+    restart: on-failure
+
+  kafka:
+    image: bitnami/kafka:latest
+    ports:
+      - 9092:9092
+    profiles: ["db"] # Allows selectively to enable or disable this services depending on your needs and will not start by default.
+    environment:
+      ALLOW_PLAINTEXT_LISTENER: "yes"
+      KAFKA_LISTENERS: INTERNAL://0.0.0.0:9094,OUTSIDE://0.0.0.0:9092
+      KAFKA_ADVERTISED_LISTENERS: INTERNAL://kafka:9094,OUTSIDE://192.168.50.180:9092
+      KAFKA_LISTENER_SECURITY_PROTOCOL_MAP: INTERNAL:PLAINTEXT,OUTSIDE:PLAINTEXT
+      KAFKA_INTER_BROKER_LISTENER_NAME: INTERNAL
+      KAFKA_ZOOKEEPER_CONNECT: zookeeper:2181
+    restart: on-failure

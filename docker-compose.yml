@@ -1,0 +1,80 @@
+version: "3.2"
+services:
+  pointduty.prediction.individual:
+    build: 
+      context: ./prediction_service/prediction
+      shm_size: '3gb'       
+      dockerfile: ./Dockerfile 
+    hostname: pointduty.prediction.individual
+    command: nvidia-smi
+    deploy:
+      resources:
+        reservations:
+          devices:
+            - driver: nvidia
+              count: 1
+              capabilities: [gpu]
+    env_file: 
+      - .env
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT}:/video_path # Update in .env
+    restart: unless-stopped
+
+  pointduty.prediction.individual.image.capture:
+    build: 
+      context: ./prediction_service/camera_capturing
+      shm_size: '3gb'       
+      dockerfile: ./Dockerfile 
+    hostname: pointduty.prediction.individual.image.capture
+    env_file: 
+      - .env
+    # extra_hosts:
+    #   - "host.docker.internal:host-gateway"
+    volumes:
+      - ${ROOT}:/video_path # Update in .env
+    restart: unless-stopped
+
+  pointduty.kafka_consumer:
+    build: 
+      context: ./kafka_services/kafka_consumer
+      shm_size: '3gb'       
+      dockerfile: ./Dockerfile 
+    hostname: consumer
+    env_file: 
+      - .env
+    restart: unless-stopped
+
+  pointduty.kafka.monitor:
+    build: 
+      context: ./kafka_services/kafka_monitor
+      shm_size: '3gb'       
+      dockerfile: ./Dockerfile 
+    hostname: monitor
+    env_file: 
+      - .env
+    restart: unless-stopped
+
+  pointduty.kafka_monitor_producer:
+    build: 
+      context: ./kafka_services/kafka_monitor_to_producer
+      shm_size: '3gb'       
+      dockerfile: ./Dockerfile 
+    hostname: pointduty.kafka.monitor
+    env_file: 
+      - .env
+    restart: unless-stopped
+
+  pointduty.dapr:
+    build: 
+      context: ./prediction_service/iou
+      shm_size: '3gb'       
+      dockerfile: ./Dockerfile 
+    ports:
+      - 30212:30212
+      - 3601:3601
+    hostname: pointduty.dapr
+    env_file: 
+      - .env
+    restart: unless-stopped

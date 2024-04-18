@@ -1,0 +1,29 @@
+notification_rules: 
+  1: 
+    generate_alarm: False #should always false
+    detail_reason: "Time not eligible"
+  2: 
+    generate_alarm: False
+    detail_reason: "area >= max threshold & area <= min threshold"
+  3: 
+    generate_alarm: True
+    detail_reason: "iou>=notification threshold & time elapsed>time threshold"
+  4: 
+    generate_alarm: False
+    detail_reason: "iou >= min threshold & area > min threshold & area  < max percentage threshold"
+  5: 
+    generate_alarm: True
+    detail_reason: "No false condition satisified(area,iou,time eligibility)"
+  6: 
+    generate_alarm: True
+    detail_reason: "First alarm or alarm generated after time elapsed"
+  7: 
+    generate_alarm: False
+    detail_reason: "Time threshold does not matched time < TIME_ELAPSED_NOTIFICATION"
+
+  8: 
+    generate_alarm: False 
+    detail_reason: "Classification model is not recognizing it as a smoke."
+  9: 
+    generate_alarm: True 
+    detail_reason: "Classification model is recognizing it as a smoke."

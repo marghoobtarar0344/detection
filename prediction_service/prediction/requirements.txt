@@ -1,0 +1,32 @@
+python-dotenv
+aioodbc==0.3.3
+anyio==3.6.1
+attrs==22.1.0        
+colorama     
+# contourpy     
+cycler     
+# exceptiongroup==1.0.3
+fastapi  
+iniconfig    
+kiwisolver
+matplotlib
+numpy
+pandas
+Pillow==9.5.0
+pydantic==1.10.10
+pyodbc
+python-dateutil
+scipy
+six
+starlette
+tqdm
+typing_extensions
+uvicorn
+opencv-python
+minio
+pafy
+youtube-dl==2020.12.2
+twilio
+#tf-nightly
+hydra-core==1.3.2
+linetimer
