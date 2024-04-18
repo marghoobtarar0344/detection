@@ -1,15 +1,3 @@
-USE AIHUMANPETROL
--- drop table LUCY_TO_UI
--- DROP table content_type
--- drop table frames
--- drop table video_path_table
--- drop TABLE Cameras
--- DROP TABLE LUCY_TO_PROCESS_CLAC
--- DROP table metrices
--- DROP TABLE sample_random_frame
--- drop TABLE perform_task
--- drop TABLE events_occur
--- drop TABLE sms_verification
 
 SET ANSI_NULLS ON
 GO
@@ -26,7 +14,7 @@ CREATE TABLE [dbo].[Cameras](
 	[type] [varchar](255) NULL,
 	[elevation] [float] NULL,
 	[bearing] [float] NULL,
-	[error_status] bit 0,
+	[error_status] bit DEFAULT 0,
 	[error_description] [varchar](255) NULL,
 	[control_comment] [varchar](max) NULL,
 	[quality_status] [bit] NULL
@@ -35,7 +23,7 @@ GO
 ALTER TABLE [dbo].[Cameras] ADD  CONSTRAINT [PK_Cameras] PRIMARY KEY CLUSTERED 
 (
 	[ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 ALTER TABLE [dbo].[Cameras] ADD  DEFAULT ((0)) FOR [current_status]
 GO
@@ -163,76 +151,7 @@ ADD
 
 GO
 
-	
-SET ANSI_NULLS ON
-GO
 
-SET QUOTED_IDENTIFIER ON
-GO
-
-CREATE TABLE [dbo].[sample_random_frame](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[category] [varchar](max) NULL,
-	[frame_ID] [bigint] NOT NULL,
-	[frame_number] [bigint] NOT NULL,
-	[image_name] [varchar](max) NOT NULL,
- CONSTRAINT [PK_sample_random_frame] PRIMARY KEY CLUSTERED 
-(
-	[ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-
-CREATE TABLE [dbo].[perform_task](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[process] [varchar](max) NULL,
-	[processed_code] [bigint] NULL,
-	[counter_is] [bigint] NULL
- CONSTRAINT [PK_perform_task] PRIMARY KEY CLUSTERED 
-(
-	[ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-INSERT INTO perform_task (process,processed_code,counter_is) VALUES('modeling',422,1)
-
-SET ANSI_NULLS ON
-GO
-SET QUOTED_IDENTIFIER ON
-GO
-CREATE TABLE [dbo].[LUCY_TO_UI](
-	[ID] [int] IDENTITY(1,1) NOT NULL,
-	[frame_table_id] [int] NOT NULL,
-	[feedback] [varchar](max) NULL,
-	[given_x_min] [float] NULL,
-	[given_y_min] [float] NULL,
-	[given_x_max] [float] NULL,
-	[given_y_max] [float] NULL,
-	[category] [bit] NULL,
- CONSTRAINT [PK_LUCY_TO_UI] PRIMARY KEY CLUSTERED 
-(
-	[ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-ALTER TABLE [dbo].[LUCY_TO_UI] ADD  DEFAULT ((-1)) FOR [given_x_min]
-GO
-ALTER TABLE [dbo].[LUCY_TO_UI] ADD  DEFAULT ((-1)) FOR [given_y_min]
-GO
-ALTER TABLE [dbo].[LUCY_TO_UI] ADD  DEFAULT ((-1)) FOR [given_x_max]
-GO
-ALTER TABLE [dbo].[LUCY_TO_UI] ADD  DEFAULT ((-1)) FOR [given_y_max]
-GO
-ALTER TABLE [dbo].[LUCY_TO_UI] ADD  DEFAULT ((0)) FOR [category]
-GO
-ALTER TABLE [dbo].[LUCY_TO_UI]  WITH CHECK ADD  CONSTRAINT [FK_LUCY_TO_UI] FOREIGN KEY([frame_table_id])
-REFERENCES [dbo].[frames] ([ID])
-ON UPDATE CASCADE
-ON DELETE CASCADE
-GO
-ALTER TABLE [dbo].[LUCY_TO_UI] CHECK CONSTRAINT [FK_LUCY_TO_UI]
-GO
-	
 GO
         CREATE TABLE [dbo].[LUCY_TO_PROCESS_CLAC](
             [ID] [int] IDENTITY(1, 1) NOT NULL,
@@ -252,82 +171,6 @@ GO
 
 CREATE NONCLUSTERED INDEX IX_LUCY_TO_PROCESS_CLAC ON [dbo].[LUCY_TO_PROCESS_CLAC] ([current_datetime]);
 
-GO
-
-GO
-    CREATE TABLE [dbo].[events_occur](
-            [ID] [int] IDENTITY(1, 1) NOT NULL,
-            [event_name] [varchar](max) NOT NULL,
-            [is_completed]  [int] DEFAULT 0,
-			[is_started] [int] DEFAULT 0,
-            [description] [varchar](max)  NULL,
-			[is_read] [int] DEFAULT 0,
-           
-            CONSTRAINT [PK_events_occur] PRIMARY KEY CLUSTERED 
-(
-    [ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
-GO
-
-GO
-    CREATE TABLE [dbo].[sms_verification](
-            [ID] [int] IDENTITY(1, 1) NOT NULL,
-            [code]  [int] NOT NULL,
-            [from_number] [varchar](max)  NULL,
-            [to_number] [varchar](max)  NULL,
-			[current_datetime] DATETIME NOT NULL DEFAULT GETUTCDATE(),
-            CONSTRAINT [PK_sms_verification] PRIMARY KEY CLUSTERED 
-(
-    [ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] 
-GO
-
-GO
-    CREATE TABLE [dbo].[metrices](
-            [ID] [int] IDENTITY(1, 1) NOT NULL,
-           
- [DetectionBoxes_Precision_mAP]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Precision_mAP_75IOU]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Precision_mAP_50IOU]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Precision_mAP_small]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Precision_mAP_medium]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Precision_mAP_large]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Recall_AR_1]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Recall_AR_10]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Recall_AR_100]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Recall_AR_100_small]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Recall_AR_100_medium]  [float] DEFAULT 0 ,
-            [DetectionBoxes_Recall_AR_100_large]  [float] DEFAULT 0 ,
-            [Loss_localization_loss]  [float] DEFAULT 0 ,
-            [Loss_classification_loss]  [float] DEFAULT 0 ,
-            [Loss_regularization_loss]  [float] DEFAULT 0 ,
-            [Loss_total_loss] [float] DEFAULT 0 ,
-			[current_datetime] DATETIME NOT NULL DEFAULT GETUTCDATE(),
-            CONSTRAINT [PK_metrices] PRIMARY KEY CLUSTERED 
-(
-    [ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] 
-GO
-
-GO
-        CREATE TABLE [dbo].[AUDIT_FRAMES_CALCULATION](
-            [ID] [int] IDENTITY(1, 1) NOT NULL,
-            [Camera_ID] [int] NOT NULL,
-            [total_frames] [int]  DEFAULT 0,
-            [have_content] [int]  DEFAULT 0,
-            [no_content] [int] DEFAULT 0,
-            [is_processing] [bit] DEFAULT 0,
-            [processed_successfully] [bit]  DEFAULT 0,
-            [passed] [int]  DEFAULT 0,
-            [current_datetime] DATETIME NOT NULL DEFAULT GETUTCDATE()
-            CONSTRAINT [PK_AUDIT_FRAMES_CALCULATION] PRIMARY KEY CLUSTERED 
-(
-    [ID] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
-) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
 GO
 
 SET ANSI_NULLS ON
@@ -356,7 +199,7 @@ GO
 ALTER TABLE [dbo].[alert] ADD  CONSTRAINT [PK_BushfireDetection] PRIMARY KEY CLUSTERED 
 (
 	[AlertUrl] ASC
-)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
 GO
 /****** Object:  Table [dbo].[NOTIFICATION_THRESHOLD]    Script Date: 6/27/2023 11:27:58 AM ******/
 SET ANSI_NULLS ON

@@ -43,7 +43,7 @@ def get_batch_status(db):
         else:
             raise RuntimeError(f"""Please insert the entry for Camera capturing in the BATCH_STATUS TABLE  example (LUCY,
                                     camera,
-                                    [AIHUMAN],
+                                    [AIHUMANPETROL],
                                     [dbo].[Cameras],
                                     {DATABASE_URL},
                                     current_status)""")
