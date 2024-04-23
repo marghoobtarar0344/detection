@@ -73,7 +73,9 @@ try:
     warnings.filterwarnings('ignore')
     print('Loading model...', end='')
     # Load saved model and build the detection function
-    detect_fn = tf.saved_model.load(PATH_TO_SAVED_MODEL)
+    detect_fn = tf.saved_model.load('/saved_model')
+    detect_fn = detect_fn.signatures['serving_default']
+
     gpu_devices = tf.config.list_physical_devices('GPU')
     print('************ here are GPU devices=>', gpu_devices)
     if gpu_devices:
