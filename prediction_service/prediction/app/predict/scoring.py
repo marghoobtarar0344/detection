@@ -124,108 +124,109 @@ def detect(
         input_tensor = input_tensor[tf.newaxis, ...]
 
         detections = detect_fn(input_tensor)
+        print(detections)
         # All outputs are batches tensors.
         # Convert to numpy arrays, and take index [0] to remove the batch dimension.
         # We're only interested in the first num_detections.
-        num_detections = int(detections.pop('num_detections'))
-        detections = {key: value[0, :num_detections].numpy()
-                      for key, value in detections.items()}
-        detections['num_detections'] = num_detections
-        # detection_classes should be ints.
-        detections['detection_classes'] = detections['detection_classes'].astype(
-            np.int64)
+        # num_detections = int(detections.pop('num_detections'))
+        # detections = {key: value[0, :num_detections].numpy()
+        #               for key, value in detections.items()}
+        # detections['num_detections'] = num_detections
+        # # detection_classes should be ints.
+        # detections['detection_classes'] = detections['detection_classes'].astype(
+        #     np.int64)
 
-        iteration = 0
-        image_saved = False
-        detection_time = datetime.datetime.now(datetime.timezone.utc).strftime(
-            "%Y-%m-%d %H:%M:%S")  # + datetime.timedelta(hours=int(10))  # exat australia time 
-        any_detection = False
-        detection_alarm = False
+        # iteration = 0
+        # image_saved = False
+        # detection_time = datetime.datetime.now(datetime.timezone.utc).strftime(
+        #     "%Y-%m-%d %H:%M:%S")  # + datetime.timedelta(hours=int(10))  # exat australia time 
+        # any_detection = False
+        # detection_alarm = False
 
-        ''' ************* block start *****************'''
-        ''' removing those rows whose score is less than the given threshold need code optimization '''
-        detection_box = []
-        detection_score = []
-        detections_class = []
-        print(detections)
-        print(detections['detection_classes'])
-        print(detections['detection_boxes'])
-        print(detections['detection_scores'])
+        # ''' ************* block start *****************'''
+        # ''' removing those rows whose score is less than the given threshold need code optimization '''
+        # detection_box = []
+        # detection_score = []
+        # detections_class = []
+        # print(detections)
+        # print(detections['detection_classes'])
+        # print(detections['detection_boxes'])
+        # print(detections['detection_scores'])
 
-        for i in range(0, len(detections['detection_boxes'])):
-            # converting scores into percentage
-            if float(detections['detection_scores'][i])*100 >= MIN_THRESHOLD_DETECTION:
-                detection_box.append(detections['detection_boxes'][i])
-                detection_score.append(detections['detection_scores'][i])
-                detections_class.append(detections['detection_classes'][i])
+        # for i in range(0, len(detections['detection_boxes'])):
+        #     # converting scores into percentage
+        #     if float(detections['detection_scores'][i])*100 >= MIN_THRESHOLD_DETECTION:
+        #         detection_box.append(detections['detection_boxes'][i])
+        #         detection_score.append(detections['detection_scores'][i])
+        #         detections_class.append(detections['detection_classes'][i])
 
-        detections['detection_scores'], detections['detection_boxes'], detections['detection_classes'] = np.array(
-            detection_score), np.array(detection_box), np.array(detections_class)
-        ''' ************** block end ****************** '''
+        # detections['detection_scores'], detections['detection_boxes'], detections['detection_classes'] = np.array(
+        #     detection_score), np.array(detection_box), np.array(detections_class)
+        # ''' ************** block end ****************** '''
 
-        # print("BEFORE NMS:",detections['detection_scores'], detections['detection_boxes'], detections['detection_classes'])
-        detection_supression_box, indexes, scores = NMS(
-            detections['detection_scores'], detections['detection_boxes']*RESIZING_VALUE[0], SUPRESSION_THRESHOLD)
-        presigned_url = ''
+        # # print("BEFORE NMS:",detections['detection_scores'], detections['detection_boxes'], detections['detection_classes'])
+        # detection_supression_box, indexes, scores = NMS(
+        #     detections['detection_scores'], detections['detection_boxes']*RESIZING_VALUE[0], SUPRESSION_THRESHOLD)
+        # presigned_url = ''
 
-        if ENABLE_BOUNDARY_BOXES:
-            image_np = draw_rectangle(
-                image_np,
-                scores,
-                indexes,
-                detection_supression_box,
-                actual_file_path,
-                image_name
-            )
+        # if ENABLE_BOUNDARY_BOXES:
+        #     image_np = draw_rectangle(
+        #         image_np,
+        #         scores,
+        #         indexes,
+        #         detection_supression_box,
+        #         actual_file_path,
+        #         image_name
+        #     )
 
-        iteration = 0
-        area = 0
-        for dat in indexes:
-            score = "{:.2f}".format(scores[dat])
-            # if float(score)*100 >= MIN_THRESHOLD_DETECTION: #converting score into percentage
-            any_detection = True
-            detection_box = detection_supression_box[iteration]
-            ymin = detection_box[0]
-            xmin = detection_box[1]
-            xmax = detection_box[3]
-            ymax = detection_box[2]
-            area = (xmax-xmin)*(ymax-ymin)*100/(640*640)
+        # iteration = 0
+        # area = 0
+        # for dat in indexes:
+        #     score = "{:.2f}".format(scores[dat])
+        #     # if float(score)*100 >= MIN_THRESHOLD_DETECTION: #converting score into percentage
+        #     any_detection = True
+        #     detection_box = detection_supression_box[iteration]
+        #     ymin = detection_box[0]
+        #     xmin = detection_box[1]
+        #     xmax = detection_box[3]
+        #     ymax = detection_box[2]
+        #     area = (xmax-xmin)*(ymax-ymin)*100/(640*640)
 
-            if not image_saved:
-                saved, presigned_url = minio_put_obj(
-                    MINIO_HAVE_CONTENT_FOLDER_NAME, image_name, image_np)
+        #     if not image_saved:
+        #         saved, presigned_url = minio_put_obj(
+        #             MINIO_HAVE_CONTENT_FOLDER_NAME, image_name, image_np)
 
-                image_saved = True
-                '''update the data to check if the content exist'''
-                query = f'''
-                INSERT INTO {AI_FRAMES}
-                (video_path_table_id,image_name,frame_number,time_in_sec,content ,  detection_datetime ,presigned_url)
-                VALUES
-                (?,?,?,?,?,?,?)
-                '''
-                db.execute(query, video_id,
-                           image_name, frame_number, occured_time, 1, detection_time, presigned_url)
+        #         image_saved = True
+        #         '''update the data to check if the content exist'''
+        #         query = f'''
+        #         INSERT INTO {AI_FRAMES}
+        #         (video_path_table_id,image_name,frame_number,time_in_sec,content ,  detection_datetime ,presigned_url)
+        #         VALUES
+        #         (?,?,?,?,?,?,?)
+        #         '''
+        #         db.execute(query, video_id,
+        #                    image_name, frame_number, occured_time, 1, detection_time, presigned_url)
 
-                query = "SELECT CAST (@@IDENTITY AS int) AS id"
-                db.execute(query)
-                id = mssql_result2dict(db)
+        #         query = "SELECT CAST (@@IDENTITY AS int) AS id"
+        #         db.execute(query)
+        #         id = mssql_result2dict(db)
 
-                id = id[0]['id']
+        #         id = id[0]['id']
 
 
-            category = category_index[detections['detection_classes'][dat]]['name']
-            query = f'INSERT INTO {CONTENT_TYPE_DATA_TABLE} (frame_table_id,score, category,x_min,y_min,x_max,y_max,area) VALUES(?,?,?,?,?,?,?,?)'
-            db.execute(
-                query,
-                id,
-                float(score),
-                category,
-                int(xmin),
-                int(ymin),
-                int(xmax),
-                int(ymax),
-                float(area)
-            )
+        #     category = category_index[detections['detection_classes'][dat]]['name']
+        #     query = f'INSERT INTO {CONTENT_TYPE_DATA_TABLE} (frame_table_id,score, category,x_min,y_min,x_max,y_max,area) VALUES(?,?,?,?,?,?,?,?)'
+        #     db.execute(
+        #         query,
+        #         id,
+        #         float(score),
+        #         category,
+        #         int(xmin),
+        #         int(ymin),
+        #         int(xmax),
+        #         int(ymax),
+        #         float(area)
+        #     )
             
             # rule, alarm_beep = valid_notification(
             #     xmin, ymin, xmax, ymax, detection_time, area, camera_id, db)
@@ -359,24 +360,24 @@ def detect(
             #         id  # it is the frame number in frame table
             #     )
 
-            iteration += 1
+        #     iteration += 1
 
-        if not any_detection:
+        # if not any_detection:
             # '''update the data to check if the content exist'''
             # with CodeTimer('scoring.py move file from drive to minio'):
             #     shutil.move(actual_file_path, str(
             #         Path(MINIO_STATIC_FOLDER_PATH, MINIO_NO_CONTENT_FOLDER_NAME, image_name)))
 
-            saved, presigned_url = minio_put_obj(
-                MINIO_NO_CONTENT_FOLDER_NAME, image_name, image_np)
-            query = f'''
-            INSERT INTO {AI_FRAMES}
-                (video_path_table_id,image_name,frame_number,time_in_sec,content,  detection_datetime ,presigned_url)
-                VALUES
-                (?,?,?,?,?,?,?)
-            '''
-            db.execute(query, video_id,
-                       image_name, frame_number, occured_time, 0, detection_time, presigned_url)
+            # saved, presigned_url = minio_put_obj(
+            #     MINIO_NO_CONTENT_FOLDER_NAME, image_name, image_np)
+            # query = f'''
+            # INSERT INTO {AI_FRAMES}
+            #     (video_path_table_id,image_name,frame_number,time_in_sec,content,  detection_datetime ,presigned_url)
+            #     VALUES
+            #     (?,?,?,?,?,?,?)
+            # '''
+            # db.execute(query, video_id,
+            #            image_name, frame_number, occured_time, 0, detection_time, presigned_url)
 
     except Exception as e:
         error = get_error(e)
