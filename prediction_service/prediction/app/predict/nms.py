@@ -9,7 +9,7 @@
 # -------------------Point Duty Pty Ltd.--------------------
 
 import numpy as np
-from common.exception_detections import get_error
+# from common.exception_detections import get_error
 def calculate_iou(box, boxes):
     # Calculate intersection area
     x1 = np.maximum(box[0], boxes[:, 0])

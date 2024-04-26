@@ -16,7 +16,7 @@ from pathlib import Path
 
 import tensorflow as tf
 import numpy as np
-from .nms import perform_multiclass_nms
+from nms import perform_multiclass_nms
 from common.sql_to_dict import mssql_result2dict
 
 from common.exception_detections import get_error
