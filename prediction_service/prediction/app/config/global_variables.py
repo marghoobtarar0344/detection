@@ -68,7 +68,7 @@ END_HR=6
 MINIO_URL =os.getenv('MINIO_URL') 
 MINIO_ACCESS_KEY = os.getenv('MINIO_ACCESS_KEY') 
 MINIO_SECRET_KEY = os.getenv('MINIO_SECRET_KEY')
-MINIO_STATIC_FOLDER_PATH = '/minio/fireai'
+MINIO_STATIC_FOLDER_PATH = '/minio/petrolpump'
 BUCKET_NAME_MODEL = 'models'
 BASE_PATH_SAVE_MODEL= str(Path('app', 'new_pb_model').resolve())
 MINIO_BUCKET = 'petrolpump'
@@ -98,6 +98,17 @@ SCORE_BACKGROUND_COLOR = '#92D050'
 BOX_COLOR = '#92D050'
 CLASSIFICATION_INVOKE_SERVICE='http://192.168.50.193:3500' #os.getenv('CLASSIFICATION_INVOKE_SERVICE')#
 NOTIFICATION_RULES={}
+
+
+# *************************** petrol pump ****************
+CLASSES_TO_DETECT = [3,4,6,8] #CHECK BELOW REFERENCE
+# https://gist.github.com/iitzco/3b2ee634a12f154be6e840308abfcab5
+SCORE_THRESHOLD = 0.3
+NMS_THRESHOLD=0.5
+
+
+
+
 
 
 _HYDRA_PARAMS = {

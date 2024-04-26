@@ -16,7 +16,7 @@ from pathlib import Path
 
 import tensorflow as tf
 import numpy as np
-from .nms import NMS
+from .nms import perform_multiclass_nms
 from common.sql_to_dict import mssql_result2dict
 
 from common.exception_detections import get_error
@@ -49,7 +49,10 @@ from config.global_variables import (
     DB_NAME_BUSHFIRE,
     NOTIFICATION_RULES,
     MINIO_STATIC_FOLDER_PATH,
-    FRAMES_CLAC_TABLE
+    FRAMES_CLAC_TABLE,
+    CLASSES_TO_DETECT,
+    SCORE_THRESHOLD,
+    NMS_THRESHOLD
 
 )
 
@@ -125,6 +128,26 @@ def detect(
 
         detections = detect_fn(input_tensor)
         print(detections)
+        tensor = detections['detections:0']
+        
+        score_threshold = SCORE_THRESHOLD
+        specific_classes = CLASSES_TO_DETECT
+        numpy_array = tensor.numpy()
+        numpy_array = numpy_array[0]
+        numpy_array = np.array(numpy_array)
+        indices = np.where(numpy_array[:, 5] > score_threshold)
+        numpy_array = numpy_array[indices]
+        mask = np.isin(numpy_array[:,6].astype(int), specific_classes)
+        # Filter the array using the mask
+        numpy_array = numpy_array[mask]
+        boxes = numpy_array[:,1:5]
+        class_ids = numpy_array[:,6].astype(int)
+        scores = numpy_array[:,5]
+        
+        filtered_boxes,filtered_scores,filtered_classes = perform_multiclass_nms(scores,boxes,class_ids,NMS_THRESHOLD)
+        
+
+
         # All outputs are batches tensors.
         # Convert to numpy arrays, and take index [0] to remove the batch dimension.
         # We're only interested in the first num_detections.

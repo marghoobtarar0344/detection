@@ -10,60 +10,58 @@
 
 import numpy as np
 from common.exception_detections import get_error
-def NMS(scores, boxes, threshold=0.3):
-    try:
-        scores = scores
-        # print('actual socres',scores)
-        # act_score = scores
-        # Return an empty list, if no boxes given
-        if len(boxes) == 0:
-            return [], [], []
-        x1 = boxes[:, 1]  # x coordinate of the top-left corner
-        y1 = boxes[:, 0]  # y coordinate of the top-left corner
-        x2 = boxes[:, 3]  # x coordinate of the bottom-right corner
-        y2 = boxes[:, 2]  # y coordinate of the bottom-right corner
-        # print('here is the x1',x1)
-        # Compute the area of the bounding boxes and sort the bounding
-        # Boxes by the bottom-right y-coordinate of the bounding box
-        # We add 1, because the pixel at the start as well as at the end counts
-        areas = (x2 - x1 + 1) * (y2 - y1 + 1)
-        # The indices of all boxes at start. We will redundant indices one by one.
-        indices = np.arange(len(x1))
-        break_index = 0
-        area=0
-        for i, box in enumerate(boxes):
-            # Create temporary indices
-            temp_indices = indices[indices != i]
+def calculate_iou(box, boxes):
+    # Calculate intersection area
+    x1 = np.maximum(box[0], boxes[:, 0])
+    y1 = np.maximum(box[1], boxes[:, 1])
+    x2 = np.minimum(box[2], boxes[:, 2])
+    y2 = np.minimum(box[3], boxes[:, 3])
+    intersection_area = np.maximum(0, x2 - x1) * np.maximum(0, y2 - y1)
+    # Calculate box and boxes areas
+    box_area = (box[2] - box[0]) * (box[3] - box[1])
+    boxes_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
+    # Calculate IoU
+    iou = intersection_area / (box_area + boxes_area - intersection_area)
+    return iou
 
-            # Find out the coordinates of the intersection box
-            xx1 = np.maximum(box[1], boxes[temp_indices, 1])
-            yy1 = np.maximum(box[0], boxes[temp_indices, 0])
-            xx2 = np.minimum(box[3], boxes[temp_indices, 3])
-            yy2 = np.minimum(box[2], boxes[temp_indices, 2])
+def nms(boxes, scores, threshold):
+    # Sort boxes based on scores (descending order)
+    sorted_indices = np.argsort(scores)[::-1]
+    # print(sorted_indices)
+    boxes = boxes[sorted_indices]
+    scores = scores[sorted_indices]
+    picked_indices = []
+    while len(boxes) > 0:
+        # Pick the box with the highest score
+        picked_indices.append(sorted_indices[0])
+        current_box = boxes[0]
+        remaining_boxes = boxes[1:]
+        # Calculate IoU (Intersection over Union) with remaining boxes
+        ious = calculate_iou(current_box, remaining_boxes)
+        # Filter out boxes with IoU greater than the threshold
+        filtered_indices = np.where(ious <= threshold)[0]
+        boxes = remaining_boxes[filtered_indices]
+        sorted_indices = sorted_indices[filtered_indices + 1]
+        scores = scores[filtered_indices]
+    return picked_indices
 
-            # Find out the width and the height of the intersection box
-            w = np.maximum(0, xx2 - xx1 + 1)
-            h = np.maximum(0, yy2 - yy1 + 1)
-            
-            #print("box size:",w,h)
-            # compute the ratio of overlap
-            overlap = (w * h) / areas[temp_indices]
-            # if the actual boungding box has an overlap bigger than treshold with any other box, remove it's index
-            if np.any(overlap) > threshold:
-                indices = indices[indices != i]
-            else:
-                temp = scores[break_index]
-                for lop in range(break_index, i):
-                    if temp < scores[lop+1]:
-                        temp = scores[lop+1]
-                    
-
-                scores[i] = temp
-                break_index = i+1
-        # return only the boxes at the remaining indices
-        # print('we got indices', indices, scores)
-        return boxes[indices].astype(int), indices, scores
-    except Exception as e:
-        error = get_error(e)
+def perform_multiclass_nms(scores,boxes,class_ids,threshold):
+    
+    filter_box = []
+    filter_score = []
+    filter_class = []
+    # print(scores[np.array([False,  False, False,  True, False])])
+    for class_id in np.unique(class_ids):
+        class_boxes = boxes[class_ids == class_id]
+        class_scores = scores[class_ids == class_id]
+        classes = class_ids[class_ids == class_id]
+        class_filtered_indices= nms( class_boxes, class_scores,threshold)
+        print(class_boxes)
+        print(class_scores)
+        print(class_filtered_indices)
+        filter_box.extend(class_boxes[class_filtered_indices])
+        filter_score.extend(class_scores[class_filtered_indices])
+        filter_class.extend(classes[class_filtered_indices])
+    return filter_box,filter_score,filter_class
         
-        raise RuntimeError(error)
+        

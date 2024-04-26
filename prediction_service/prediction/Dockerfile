@@ -73,7 +73,7 @@ RUN apt-get install -y scrot dos2unix
 RUN pip install python3_xlib
 RUN pip install python-xlib
 RUN pip install python-dotenv
-
+RUN apt-get install nano
 #RUN wget https://developer.download.nvidia.com/compute/cuda/repos/ubuntu2004/x86_64/libcudnn8-dev_8.6.0.163-1+cuda11.8_amd64.deb
 #RUN dpkg -i libcudnn8-dev_8.6.0.163-1+cuda11.8_amd64.deb
 WORKDIR /  
