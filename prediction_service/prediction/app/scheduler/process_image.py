@@ -61,10 +61,12 @@ async def read_clac_table(cursor):
                 INNER JOIN   
                 {AI_VIDEO_PATH}  AS vp on vp.main_file=lc.Camera_ID            
                 WHERE 
-                lc.processed_flag = ? and 
-                lc.current_datetime <= '{current_time}' and 
-                lc.current_datetime>='{previous_time}'
+                lc.processed_flag = ? 
                 """
+                
+                # and 
+                # lc.current_datetime <= '{current_time}' and 
+                # lc.current_datetime>='{previous_time}'
         cursor.execute(query, 0)
         data = mssql_result2dict(cursor)
         print(" read_clac_table, process_list is the latest image bucket ", len(data))
