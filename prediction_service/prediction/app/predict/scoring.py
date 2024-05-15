@@ -167,11 +167,12 @@ def detect(
             score = "{:.2f}".format(dat)
             # if float(score)*100 >= MIN_THRESHOLD_DETECTION: #converting score into percentage
             any_detection = True
-            detection_box = detection_box[iteration]
-            ymin = detection_box[1]
-            xmin = detection_box[0]
-            xmax = detection_box[2]
-            ymax = detection_box[3]
+            # detection_box = detection_box[iteration]
+            # print(detection_box)
+            xmin,ymin,xmax,ymax = detection_box[iteration]
+            # xmin = detection_box[0]
+            # xmax = detection_box[2]
+            # ymax = detection_box[3]
             area = (xmax-xmin)*(ymax-ymin)*100/(640*640)
 
             if not image_saved:
