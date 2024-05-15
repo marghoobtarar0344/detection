@@ -15,7 +15,7 @@ from config.global_variables import (
     MINIO_STATIC_FOLDER_PATH
     )
 
-def draw_rectangle(image_np_with_detections, scores,indexes,detection_supression_box,actual_file_path,image_name):
+def draw_rectangle(image_np_with_detections, scores,detection_supression_box,actual_file_path,image_name):
     try:
         iteration = 0
         draw_boxes = 0
@@ -25,17 +25,17 @@ def draw_rectangle(image_np_with_detections, scores,indexes,detection_supression
         i = Image.fromarray(image_np_with_detections.astype('uint8'), 'RGB')
         draw=D.Draw(i)
         
-        for dat in indexes:
-            score = float("{:.2f}".format(scores[dat]))
+        for dat in scores:
+            score = float("{:.2f}".format(dat))
             
             print('======DRAW THE BOXES ==== SCORE={}, MIN_THRESHOLD={}, MAX_BOX={} AND DRAW_BOX_COUNTER = {}'.format(score,MIN_THRESHOLD_DETECTION,MAX_BOX, draw_boxes))
             
             if score*100 >= MIN_THRESHOLD_DETECTION:
                 detection_box = detection_supression_box[iteration]
-                y_min = detection_box[0]
-                x_min = detection_box[1]
-                x_max = detection_box[3]
-                y_max = detection_box[2]
+                y_min = detection_box[1]
+                x_min = detection_box[0]
+                x_max = detection_box[2]
+                y_max = detection_box[3]
                 if draw_boxes < MAX_BOX:
                     if y_min<40:
                         y_min = 45

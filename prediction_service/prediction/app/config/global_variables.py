@@ -101,7 +101,8 @@ NOTIFICATION_RULES={}
 
 
 # *************************** petrol pump ****************
-CLASSES_TO_DETECT = [3,4,6,8] #CHECK BELOW REFERENCE
+CLASSES_TO_DETECT = [3,4,6,8]
+CLASSES_DETECT_NAME = {3:"car",4: "motorcycle",6: "bus",8: "truck"} #CHECK BELOW REFERENCE
 # https://gist.github.com/iitzco/3b2ee634a12f154be6e840308abfcab5
 SCORE_THRESHOLD = 0.3
 NMS_THRESHOLD=0.5
