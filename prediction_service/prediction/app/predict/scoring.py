@@ -196,7 +196,7 @@ def detect(
                 id = id[0]['id']
 
 
-            category =CLASSES_DETECT_NAME[iteration] # 'car' category_index[detections['detection_classes'][dat]]['name']
+            category =CLASSES_DETECT_NAME[detections_class[iteration]] # 'car' category_index[detections['detection_classes'][dat]]['name']
             query = f'INSERT INTO {CONTENT_TYPE_DATA_TABLE} (frame_table_id,score, category,x_min,y_min,x_max,y_max,area) VALUES(?,?,?,?,?,?,?,?)'
             db.execute(
                 query,
