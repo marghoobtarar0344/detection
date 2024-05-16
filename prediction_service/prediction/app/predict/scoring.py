@@ -58,41 +58,41 @@ from config.global_variables import (
 
 )
 
-gpus = tf.config.list_physical_devices('GPU')
-if gpus:
-    try:
-        # Currently, memory growth needs to be the same across GPUs
-        print('now it is entring the gpus')
-        for gpu in gpus:
-            tf.config.experimental.per_process_gpu_memory_fraction = 0.8
-            tf.config.experimental.set_memory_growth(gpu, True)
-        logical_gpus = tf.config.list_logical_devices('GPU')
-        print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
+# gpus = tf.config.list_physical_devices('GPU')
+# if gpus:
+#     try:
+#         # Currently, memory growth needs to be the same across GPUs
+#         print('now it is entring the gpus')
+#         for gpu in gpus:
+#             tf.config.experimental.per_process_gpu_memory_fraction = 0.8
+#             tf.config.experimental.set_memory_growth(gpu, True)
+#         logical_gpus = tf.config.list_logical_devices('GPU')
+#         print(len(gpus), "Physical GPUs,", len(logical_gpus), "Logical GPUs")
 
-    except Exception as e:
-        error = get_error(e)
-        raise RuntimeError(error)
-try:
-    print(tf.__version__)
-    # Loading the saved_model
-    warnings.filterwarnings('ignore')
-    print('Loading model...', end='')
-    # Load saved model and build the detection function
-    detect_fn = tf.saved_model.load('/saved_model')
-    detect_fn = detect_fn.signatures['serving_default']
+#     except Exception as e:
+#         error = get_error(e)
+#         raise RuntimeError(error)
+# try:
+#     print(tf.__version__)
+#     # Loading the saved_model
+#     warnings.filterwarnings('ignore')
+#     print('Loading model...', end='')
+#     # Load saved model and build the detection function
+#     detect_fn = tf.saved_model.load('/saved_model')
+#     detect_fn = detect_fn.signatures['serving_default']
 
-    gpu_devices = tf.config.list_physical_devices('GPU')
-    print('************ here are GPU devices=>', gpu_devices)
-    if gpu_devices:
-        details = tf.config.experimental.get_device_details(gpu_devices[0])
-        print('************here is the detail=>', details)
-    print('Model loading successfully Done!')
-    # Loading the label_map
-    # category_index = label_map_util.create_category_index_from_labelmap(
-    #     LABEL_MAP_PATH, use_display_name=True)
-except Exception as e:
-    error = get_error(e)
-    raise RuntimeError(error)
+#     gpu_devices = tf.config.list_physical_devices('GPU')
+#     print('************ here are GPU devices=>', gpu_devices)
+#     if gpu_devices:
+#         details = tf.config.experimental.get_device_details(gpu_devices[0])
+#         print('************here is the detail=>', details)
+#     print('Model loading successfully Done!')
+#     # Loading the label_map
+#     # category_index = label_map_util.create_category_index_from_labelmap(
+#     #     LABEL_MAP_PATH, use_display_name=True)
+# except Exception as e:
+#     error = get_error(e)
+#     raise RuntimeError(error)
 
 try:
     model_yolo = YOLO('/video_path/yolov8n.pt')
