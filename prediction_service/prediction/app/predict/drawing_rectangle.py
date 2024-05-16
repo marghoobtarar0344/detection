@@ -32,10 +32,10 @@ def draw_rectangle(image_np_with_detections, scores,detection_supression_box,act
             
             if score*100 >= MIN_THRESHOLD_DETECTION:
                 detection_box = detection_supression_box[iteration]
-                y_min = detection_box[1]
-                x_min = detection_box[0]
-                x_max = detection_box[2]
-                y_max = detection_box[3]
+                y_min = int(detection_box[1])
+                x_min = int(detection_box[0])
+                x_max = int(detection_box[2])
+                y_max = int(detection_box[3])
                 if draw_boxes < MAX_BOX:
                     if y_min<40:
                         y_min = 45

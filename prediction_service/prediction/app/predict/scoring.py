@@ -13,6 +13,7 @@ import string
 import warnings
 import os
 from pathlib import Path
+from ultralytics import YOLO
 
 import tensorflow as tf
 import numpy as np
@@ -93,6 +94,12 @@ except Exception as e:
     error = get_error(e)
     raise RuntimeError(error)
 
+try:
+    model_yolo = YOLO('/video_path/yolov8n.pt')
+except Exception as e:
+    model_yolo = YOLO('yolov8n.pt')
+
+
 
 def get_random_string(length):
     try:
@@ -106,7 +113,108 @@ def get_random_string(length):
         raise RuntimeError(error)
 
 
+
 def detect(
+        db,
+        camera_id,
+        camera_name,
+        camera_detail,
+        image_np,
+
+        video_id,
+        image_name,
+        frame_number,
+        occured_time,
+        actual_file_path,
+        process_calc_id
+):
+    try:
+        results = model_yolo(image_np,imgsz=(640,640),classes=[1,2,3,5,7],iou=0.7)
+        
+        for result in results:
+            if ENABLE_BOUNDARY_BOXES:
+                image_np = draw_rectangle(
+                    image_np,
+                    result.boxes.conf,
+                    result.boxes.xyxy,
+                    actual_file_path,
+                    image_name
+            )
+        # Process result
+            boxes = result.boxes  # Boxes object for bounding box outputs
+            for box in boxes:
+                xmin,ymin,xmax,ymax,score,category = box.data[0]
+                print(int(xmax),category,score)
+                image_saved = False
+                detection_time = datetime.datetime.now(datetime.timezone.utc).strftime(
+                    "%Y-%m-%d %H:%M:%S")  # + datetime.timedelta(hours=int(10))  # exat australia time 
+                presigned_url = ''
+                
+                iteration = 0
+                area = (xmax-xmin)*(ymax-ymin)*100/(640*640)
+                
+                if not image_saved:
+                    saved, presigned_url = minio_put_obj(
+                        MINIO_HAVE_CONTENT_FOLDER_NAME, image_name, image_np)
+
+                    image_saved = True
+                    '''update the data to check if the content exist'''
+                    query = f'''
+                    INSERT INTO {AI_FRAMES}
+                    (video_path_table_id,image_name,frame_number,time_in_sec,content ,  detection_datetime ,presigned_url)
+                    VALUES
+                    (?,?,?,?,?,?,?)
+                    '''
+                    db.execute(query, video_id,
+                            image_name, frame_number, occured_time, 1, detection_time, presigned_url)
+
+                    query = "SELECT CAST (@@IDENTITY AS int) AS id"
+                    db.execute(query)
+                    id = mssql_result2dict(db)
+
+                    id = id[0]['id']
+
+
+                category =CLASSES_DETECT_NAME[int(category)] # 'car' category_index[detections['detection_classes'][dat]]['name']
+                query = f'INSERT INTO {CONTENT_TYPE_DATA_TABLE} (frame_table_id,score, category,x_min,y_min,x_max,y_max,area) VALUES(?,?,?,?,?,?,?,?)'
+                db.execute(
+                    query,
+                    id,
+                    float(score),
+                    category,
+                    int(xmin),
+                    int(ymin),
+                    int(xmax),
+                    int(ymax),
+                    float(area)
+                )
+                
+                
+
+    except Exception as e:
+        error = get_error(e)
+        print('0', error)
+        try:
+            '''this is to delete the entry from frames table because of an error
+            (remember we have no need to revert this entry from lucy to process calc table
+            as the entry is already in cache to process again)
+            '''
+            sql = f'''DELETE FROM {AI_FRAMES} WHERE  presigned_url IS NULL'''
+            db.execute(sql)
+            # sql = f'''UPDATE {FRAMES_CLAC_TABLE} SET processed_flag=0 WHERE ID=?'''
+            # db.execute(sql, process_calc_id)
+        except Exception as e:
+            error = get_error(e)
+            print(error)
+
+            raise RuntimeError(error)
+        error = get_error(e)
+
+        raise RuntimeError(error)
+
+        
+
+def detect_detectron(
         db,
         camera_id,
         camera_name,
