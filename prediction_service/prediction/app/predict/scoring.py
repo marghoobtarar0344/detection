@@ -143,11 +143,14 @@ def detect(
             )
         # Process result
             boxes = result.boxes  # Boxes object for bounding box outputs
+            
             for box in boxes:
                 xmin,ymin,xmax,ymax,score,category = box.data[0]
+                print(box)
+                print(int(xmax),category,score)
+
                 if score*100 >= MIN_THRESHOLD_DETECTION:
                     continue
-                print(int(xmax),category,score)
                 image_saved = False
                 detection_time = datetime.datetime.now(datetime.timezone.utc).strftime(
                     "%Y-%m-%d %H:%M:%S")  # + datetime.timedelta(hours=int(10))  # exat australia time 
@@ -156,11 +159,12 @@ def detect(
                 iteration = 0
                 area = (xmax-xmin)*(ymax-ymin)*100/(640*640)
                 
-                
+                import cv2
+                success, image_jpg = cv2.imencode('.jpg', image_np)
                 response = requests.post(
                     'https://api.platerecognizer.com/v1/plate-reader/',
                 data=dict(regions=["mx", "us-ca"]),  #Optional
-                files=dict(upload=image_np),
+                files=dict(upload=image_jpg.tostring()),
                 headers={'Authorization': 'Token 252fe1f6c8d1b3943024ca36d59a2e2ea63205cb'})
 
                 print('plate recog response',response.json())
