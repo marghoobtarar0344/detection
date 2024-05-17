@@ -12,6 +12,7 @@ import random
 import string
 import warnings
 import os
+import requests
 from pathlib import Path
 from ultralytics import YOLO
 
@@ -154,6 +155,15 @@ def detect(
                 
                 iteration = 0
                 area = (xmax-xmin)*(ymax-ymin)*100/(640*640)
+                
+                
+                response = requests.post(
+                    'https://api.platerecognizer.com/v1/plate-reader/',
+                data=dict(regions=["mx", "us-ca"]),  #Optional
+                files=dict(upload=image_np),
+                headers={'Authorization': 'Token 252fe1f6c8d1b3943024ca36d59a2e2ea63205cb'})
+
+                print('plate recog response',response.json())
                 
                 if not image_saved:
                     saved, presigned_url = minio_put_obj(
@@ -305,14 +315,7 @@ def detect_detectron(
                 id = mssql_result2dict(db)
 
                 id = id[0]['id']
-            import requests
-            response = requests.post(
-                'https://api.platerecognizer.com/v1/plate-reader/',
-            data=dict(regions=["mx", "us-ca"]),  #Optional
-            files=dict(upload=image_np),
-            headers={'Authorization': 'Token 3a0effff73919f898b69ac65a32dc12347769564'})
-
-            print('plate recog response',response.json())
+            
             category =CLASSES_DETECT_NAME[detections_class[iteration]] # 'car' category_index[detections['detection_classes'][dat]]['name']
             query = f'INSERT INTO {CONTENT_TYPE_DATA_TABLE} (frame_table_id,score, category,x_min,y_min,x_max,y_max,area) VALUES(?,?,?,?,?,?,?,?)'
             db.execute(
