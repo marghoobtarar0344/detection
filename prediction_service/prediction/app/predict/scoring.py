@@ -149,7 +149,7 @@ def detect(
                 # print(box)
                 # print(int(xmax),category,score)
 
-                if score*100 >= MIN_THRESHOLD_DETECTION:
+                if score*100 <= MIN_THRESHOLD_DETECTION:
                     continue
                 image_saved = False
                 detection_time = datetime.datetime.now(datetime.timezone.utc).strftime(
