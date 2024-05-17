@@ -101,7 +101,7 @@ NOTIFICATION_RULES={}
 
 
 # *************************** petrol pump ****************
-CLASSES_TO_DETECT = [3,4,6,8]
+CLASSES_TO_DETECT = [1,2,3,5,7]
 CLASSES_DETECT_NAME = {1: 'bicycle', 2: 'car', 3: 'motorcycle',  5: 'bus', 6: 'train', 7: 'truck'} #CHECK BELOW REFERENCE
 
 SCORE_THRESHOLD = 0.3

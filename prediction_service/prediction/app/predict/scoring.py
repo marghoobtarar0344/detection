@@ -129,7 +129,7 @@ def detect(
         process_calc_id
 ):
     try:
-        results = model_yolo(image_np,imgsz=(640,640),classes=[1,2,3,5,7],iou=0.7)
+        results = model_yolo(image_np,imgsz=RESIZING_VALUE,classes=CLASSES_TO_DETECT,iou=NMS_THRESHOLD)
         
         for result in results:
             if ENABLE_BOUNDARY_BOXES:
@@ -144,6 +144,8 @@ def detect(
             boxes = result.boxes  # Boxes object for bounding box outputs
             for box in boxes:
                 xmin,ymin,xmax,ymax,score,category = box.data[0]
+                if score*100 >= MIN_THRESHOLD_DETECTION:
+                    continue
                 print(int(xmax),category,score)
                 image_saved = False
                 detection_time = datetime.datetime.now(datetime.timezone.utc).strftime(
@@ -303,8 +305,14 @@ def detect_detectron(
                 id = mssql_result2dict(db)
 
                 id = id[0]['id']
+            import requests
+            response = requests.post(
+                'https://api.platerecognizer.com/v1/plate-reader/',
+            data=dict(regions=["mx", "us-ca"]),  #Optional
+            files=dict(upload=image_np),
+            headers={'Authorization': 'Token 3a0effff73919f898b69ac65a32dc12347769564'})
 
-
+            print('plate recog response',response.json())
             category =CLASSES_DETECT_NAME[detections_class[iteration]] # 'car' category_index[detections['detection_classes'][dat]]['name']
             query = f'INSERT INTO {CONTENT_TYPE_DATA_TABLE} (frame_table_id,score, category,x_min,y_min,x_max,y_max,area) VALUES(?,?,?,?,?,?,?,?)'
             db.execute(
@@ -318,6 +326,7 @@ def detect_detectron(
                 int(ymax),
                 float(area)
             )
+            
             
             # rule, alarm_beep = valid_notification(
             #     xmin, ymin, xmax, ymax, detection_time, area, camera_id, db)
