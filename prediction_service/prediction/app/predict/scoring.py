@@ -146,8 +146,8 @@ def detect(
             
             for box in boxes:
                 xmin,ymin,xmax,ymax,score,category = box.data[0]
-                print(box)
-                print(int(xmax),category,score)
+                # print(box)
+                # print(int(xmax),category,score)
 
                 if score*100 >= MIN_THRESHOLD_DETECTION:
                     continue
@@ -161,14 +161,18 @@ def detect(
                 
                 import cv2
                 success, image_jpg = cv2.imencode('.jpg', image_np)
-                response = requests.post(
-                    'https://api.platerecognizer.com/v1/plate-reader/',
-                data=dict(regions=["mx", "us-ca"]),  #Optional
-                files=dict(upload=image_jpg.tostring()),
-                headers={'Authorization': 'Token 252fe1f6c8d1b3943024ca36d59a2e2ea63205cb'})
+                print('====================before calling the api ===============')
+                try:
+                    response = requests.post(
+                        'https://api.platerecognizer.com/v1/plate-reader/',
+                    data=dict(regions=["mx", "us-ca"]),  #Optional
+                    files=dict(upload=image_jpg.tostring()),
+                    headers={'Authorization': 'Token 252fe1f6c8d1b3943024ca36d59a2e2ea63205cb'})
 
-                print('plate recog response',response.json())
-                
+                    print('plate recog response',response.json())
+                except Exception as e:
+                    print('---- here is an error ----,',e)
+                print('-----------after calling an api---------')
                 if not image_saved:
                     saved, presigned_url = minio_put_obj(
                         MINIO_HAVE_CONTENT_FOLDER_NAME, image_name, image_np)

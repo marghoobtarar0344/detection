@@ -28,7 +28,7 @@ def draw_rectangle(image_np_with_detections, scores,detection_supression_box,act
         for dat in scores:
             score = float("{:.2f}".format(dat))
             
-            print('======DRAW THE BOXES ==== SCORE={}, MIN_THRESHOLD={}, MAX_BOX={} AND DRAW_BOX_COUNTER = {}'.format(score,MIN_THRESHOLD_DETECTION,MAX_BOX, draw_boxes))
+            # print('======DRAW THE BOXES ==== SCORE={}, MIN_THRESHOLD={}, MAX_BOX={} AND DRAW_BOX_COUNTER = {}'.format(score,MIN_THRESHOLD_DETECTION,MAX_BOX, draw_boxes))
             
             if score*100 >= MIN_THRESHOLD_DETECTION:
                 detection_box = detection_supression_box[iteration]
